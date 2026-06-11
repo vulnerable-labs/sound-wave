@@ -95,7 +95,7 @@ async function run() {
     }
     
     // Scan for bypass token
-    const bypassTokenRegex = /SOUNDWAVE_DEV_BYPASS_TOKEN\s*=\s*"([^"]+)"/;
+    const bypassTokenRegex = /SOUNDWAVE_DEV_BYPASS_TOKEN\s*=\s*\\?"([^"\\]+)\\?"/;
     const tokenMatch = sourceMapRes.body.match(bypassTokenRegex);
     
     if (!tokenMatch) {
