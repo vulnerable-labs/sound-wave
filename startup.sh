@@ -6,7 +6,7 @@ set -euo pipefail
 
 # === CONFIGURATION ===
 # Replace this with your actual GitHub repository URL before deploying
-REPO_URL="https://github.com/your-username/sound-wave.git"
+REPO_URL="https://github.com/vulnerable-labs/sound-wave.git"
 INSTALL_DIR="/opt/sound-wave"
 
 echo "==========================================="
